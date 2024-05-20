@@ -1,0 +1,1170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model api_restraint {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  service_id Int?
+  renew_time DateTime? @db.Timestamp(6)
+  hits       Int?
+  hits_limit Int?
+}
+
+model api_summary {
+  id           Int       @id @default(autoincrement())
+  user_id      Int?
+  service_id   Int?
+  summary_date DateTime? @db.Timestamp(6)
+  hits         Int?
+  hits_blocked Int?
+}
+
+model auth_cas {
+  id         Int        @id @default(autoincrement())
+  user_id    Int?
+  created_on DateTime?  @db.Timestamp(6)
+  service    String?    @db.VarChar(512)
+  ticket     String?    @db.VarChar(512)
+  renew      String?    @db.Char(1)
+  auth_user  auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model auth_event {
+  id          Int        @id @default(autoincrement())
+  time_stamp  DateTime?  @db.Timestamp(6)
+  client_ip   String?    @db.VarChar(512)
+  user_id     Int?
+  origin      String?    @db.VarChar(512)
+  description String?
+  auth_user   auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model auth_group {
+  id                                          Int               @id @default(autoincrement())
+  role                                        String?           @db.VarChar(512)
+  description                                 String?
+  is_active                                   String?           @db.Char(1)
+  created_on                                  DateTime?         @db.Timestamp(6)
+  created_by                                  Int?
+  modified_on                                 DateTime?         @db.Timestamp(6)
+  modified_by                                 Int?
+  auth_user_auth_group_created_byToauth_user  auth_user?        @relation("auth_group_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_auth_group_modified_byToauth_user auth_user?        @relation("auth_group_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_membership                             auth_membership[]
+  auth_permission                             auth_permission[]
+}
+
+model auth_membership {
+  id                                               Int         @id @default(autoincrement())
+  user_id                                          Int?
+  group_id                                         Int?
+  is_active                                        String?     @db.Char(1)
+  created_on                                       DateTime?   @db.Timestamp(6)
+  created_by                                       Int?
+  modified_on                                      DateTime?   @db.Timestamp(6)
+  modified_by                                      Int?
+  auth_user_auth_membership_created_byToauth_user  auth_user?  @relation("auth_membership_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_group                                       auth_group? @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_auth_membership_modified_byToauth_user auth_user?  @relation("auth_membership_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_auth_membership_user_idToauth_user     auth_user?  @relation("auth_membership_user_idToauth_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model auth_permission {
+  id                                               Int         @id @default(autoincrement())
+  group_id                                         Int?
+  name                                             String?     @db.VarChar(512)
+  table_name                                       String?     @db.VarChar(512)
+  record_id                                        Int?
+  is_active                                        String?     @db.Char(1)
+  created_on                                       DateTime?   @db.Timestamp(6)
+  created_by                                       Int?
+  modified_on                                      DateTime?   @db.Timestamp(6)
+  modified_by                                      Int?
+  auth_user_auth_permission_created_byToauth_user  auth_user?  @relation("auth_permission_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_group                                       auth_group? @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_auth_permission_modified_byToauth_user auth_user?  @relation("auth_permission_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model auth_user {
+  id                                                                           Int                          @id @default(autoincrement())
+  first_name                                                                   String?                      @db.VarChar(128)
+  last_name                                                                    String?                      @db.VarChar(128)
+  email                                                                        String?                      @db.VarChar(512)
+  password                                                                     String?                      @db.VarChar(512)
+  registration_key                                                             String?                      @db.VarChar(512)
+  reset_password_key                                                           String?                      @db.VarChar(512)
+  registration_id                                                              String?                      @db.VarChar(512)
+  cphone                                                                       String?                      @db.VarChar(512)
+  company                                                                      Int?
+  status                                                                       String?                      @db.VarChar(512)
+  user_uuid                                                                    String?                      @db.VarChar(512)
+  admin_id                                                                     Int?
+  is_active                                                                    String?                      @db.Char(1)
+  created_on                                                                   DateTime?                    @db.Timestamp(6)
+  created_by                                                                   Int?
+  modified_on                                                                  DateTime?                    @db.Timestamp(6)
+  modified_by                                                                  Int?
+  sim_fields                                                                   String?
+  sim_fields_legacy                                                            String?
+  auth_cas                                                                     auth_cas[]
+  auth_event                                                                   auth_event[]
+  auth_group_auth_group_created_byToauth_user                                  auth_group[]                 @relation("auth_group_created_byToauth_user")
+  auth_group_auth_group_modified_byToauth_user                                 auth_group[]                 @relation("auth_group_modified_byToauth_user")
+  auth_membership_auth_membership_created_byToauth_user                        auth_membership[]            @relation("auth_membership_created_byToauth_user")
+  auth_membership_auth_membership_modified_byToauth_user                       auth_membership[]            @relation("auth_membership_modified_byToauth_user")
+  auth_membership_auth_membership_user_idToauth_user                           auth_membership[]            @relation("auth_membership_user_idToauth_user")
+  auth_permission_auth_permission_created_byToauth_user                        auth_permission[]            @relation("auth_permission_created_byToauth_user")
+  auth_permission_auth_permission_modified_byToauth_user                       auth_permission[]            @relation("auth_permission_modified_byToauth_user")
+  auth_user_auth_user_admin_idToauth_user                                      auth_user?                   @relation("auth_user_admin_idToauth_user", fields: [admin_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_auth_user_auth_user_admin_idToauth_user                                auth_user[]                  @relation("auth_user_admin_idToauth_user")
+  auth_user_auth_user_created_byToauth_user                                    auth_user?                   @relation("auth_user_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_auth_user_auth_user_created_byToauth_user                              auth_user[]                  @relation("auth_user_created_byToauth_user")
+  auth_user_auth_user_modified_byToauth_user                                   auth_user?                   @relation("auth_user_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_auth_user_auth_user_modified_byToauth_user                             auth_user[]                  @relation("auth_user_modified_byToauth_user")
+  billing_comments_billing_comments_created_byToauth_user                      billing_comments[]           @relation("billing_comments_created_byToauth_user")
+  billing_comments_billing_comments_modified_byToauth_user                     billing_comments[]           @relation("billing_comments_modified_byToauth_user")
+  carrier_carrier_created_byToauth_user                                        carrier[]                    @relation("carrier_created_byToauth_user")
+  carrier_carrier_modified_byToauth_user                                       carrier[]                    @relation("carrier_modified_byToauth_user")
+  change_plan_change_plan_created_byToauth_user                                change_plan[]                @relation("change_plan_created_byToauth_user")
+  change_plan_change_plan_modified_byToauth_user                               change_plan[]                @relation("change_plan_modified_byToauth_user")
+  change_plan_change_plan_user_idToauth_user                                   change_plan[]                @relation("change_plan_user_idToauth_user")
+  commune_commune_created_byToauth_user                                        commune[]                    @relation("commune_created_byToauth_user")
+  commune_commune_modified_byToauth_user                                       commune[]                    @relation("commune_modified_byToauth_user")
+  company_entitle_company_entitle_created_byToauth_user                        company_entitle[]            @relation("company_entitle_created_byToauth_user")
+  company_entitle_company_entitle_modified_byToauth_user                       company_entitle[]            @relation("company_entitle_modified_byToauth_user")
+  company_sim_company_sim_created_byToauth_user                                company_sim[]                @relation("company_sim_created_byToauth_user")
+  company_sim_company_sim_modified_byToauth_user                               company_sim[]                @relation("company_sim_modified_byToauth_user")
+  company_sim_assigned_company_sim_assigned_created_byToauth_user              company_sim_assigned[]       @relation("company_sim_assigned_created_byToauth_user")
+  company_sim_assigned_company_sim_assigned_modified_byToauth_user             company_sim_assigned[]       @relation("company_sim_assigned_modified_byToauth_user")
+  company_sim_assigned_l_company_sim_assigned_l_created_byToauth_user          company_sim_assigned_l[]     @relation("company_sim_assigned_l_created_byToauth_user")
+  company_sim_assigned_l_company_sim_assigned_l_modified_byToauth_user         company_sim_assigned_l[]     @relation("company_sim_assigned_l_modified_byToauth_user")
+  company_sim_l_company_sim_l_created_byToauth_user                            company_sim_l[]              @relation("company_sim_l_created_byToauth_user")
+  company_sim_l_company_sim_l_modified_byToauth_user                           company_sim_l[]              @relation("company_sim_l_modified_byToauth_user")
+  data_plan_data_plan_created_byToauth_user                                    data_plan[]                  @relation("data_plan_created_byToauth_user")
+  data_plan_data_plan_modified_byToauth_user                                   data_plan[]                  @relation("data_plan_modified_byToauth_user")
+  data_plan_odoo_data_plan_odoo_created_byToauth_user                          data_plan_odoo[]             @relation("data_plan_odoo_created_byToauth_user")
+  data_plan_odoo_data_plan_odoo_modified_byToauth_user                         data_plan_odoo[]             @relation("data_plan_odoo_modified_byToauth_user")
+  discount_company_discount_company_created_byToauth_user                      discount_company[]           @relation("discount_company_created_byToauth_user")
+  discount_company_discount_company_modified_byToauth_user                     discount_company[]           @relation("discount_company_modified_byToauth_user")
+  discount_sims_discount_sims_created_byToauth_user                            discount_sims[]              @relation("discount_sims_created_byToauth_user")
+  discount_sims_discount_sims_modified_byToauth_user                           discount_sims[]              @relation("discount_sims_modified_byToauth_user")
+  global_preference_global_preference_created_byToauth_user                    global_preference[]          @relation("global_preference_created_byToauth_user")
+  global_preference_global_preference_modified_byToauth_user                   global_preference[]          @relation("global_preference_modified_byToauth_user")
+  invoice_nullified                                                            invoice_nullified[]
+  invoice_reversed                                                             invoice_reversed[]
+  legacy_del_legacy_del_clientToauth_user                                      legacy_del[]                 @relation("legacy_del_clientToauth_user")
+  legacy_del_legacy_del_created_byToauth_user                                  legacy_del[]                 @relation("legacy_del_created_byToauth_user")
+  legacy_del_legacy_del_modified_byToauth_user                                 legacy_del[]                 @relation("legacy_del_modified_byToauth_user")
+  log_company_assigned_log_company_assigned_created_byToauth_user              log_company_assigned[]       @relation("log_company_assigned_created_byToauth_user")
+  log_company_assigned_log_company_assigned_modified_byToauth_user             log_company_assigned[]       @relation("log_company_assigned_modified_byToauth_user")
+  log_sim_prepay_log_sim_prepay_created_byToauth_user                          log_sim_prepay[]             @relation("log_sim_prepay_created_byToauth_user")
+  log_sim_prepay_log_sim_prepay_modified_byToauth_user                         log_sim_prepay[]             @relation("log_sim_prepay_modified_byToauth_user")
+  mail_company_notifications_mail_company_notifications_created_byToauth_user  mail_company_notifications[] @relation("mail_company_notifications_created_byToauth_user")
+  mail_company_notifications_mail_company_notifications_modified_byToauth_user mail_company_notifications[] @relation("mail_company_notifications_modified_byToauth_user")
+  mail_event_mail_event_created_byToauth_user                                  mail_event[]                 @relation("mail_event_created_byToauth_user")
+  mail_event_mail_event_modified_byToauth_user                                 mail_event[]                 @relation("mail_event_modified_byToauth_user")
+  mail_sim_notifications_mail_sim_notifications_created_byToauth_user          mail_sim_notifications[]     @relation("mail_sim_notifications_created_byToauth_user")
+  mail_sim_notifications_mail_sim_notifications_modified_byToauth_user         mail_sim_notifications[]     @relation("mail_sim_notifications_modified_byToauth_user")
+  oneclick_invoice                                                             oneclick_invoice[]
+  order_sim_order_sim_created_byToauth_user                                    order_sim[]                  @relation("order_sim_created_byToauth_user")
+  order_sim_order_sim_modified_byToauth_user                                   order_sim[]                  @relation("order_sim_modified_byToauth_user")
+  order_sim_order_sim_user_idToauth_user                                       order_sim[]                  @relation("order_sim_user_idToauth_user")
+  region_region_created_byToauth_user                                          region[]                     @relation("region_created_byToauth_user")
+  region_region_modified_byToauth_user                                         region[]                     @relation("region_modified_byToauth_user")
+  shipping_shipping_created_byToauth_user                                      shipping[]                   @relation("shipping_created_byToauth_user")
+  shipping_shipping_modified_byToauth_user                                     shipping[]                   @relation("shipping_modified_byToauth_user")
+  sim_sim_created_byToauth_user                                                sim[]                        @relation("sim_created_byToauth_user")
+  sim_sim_modified_byToauth_user                                               sim[]                        @relation("sim_modified_byToauth_user")
+  sim_gsm_status_sim_gsm_status_created_byToauth_user                          sim_gsm_status[]             @relation("sim_gsm_status_created_byToauth_user")
+  sim_gsm_status_sim_gsm_status_modified_byToauth_user                         sim_gsm_status[]             @relation("sim_gsm_status_modified_byToauth_user")
+  sim_legacy_sim_legacy_clientToauth_user                                      sim_legacy[]                 @relation("sim_legacy_clientToauth_user")
+  sim_legacy_sim_legacy_created_byToauth_user                                  sim_legacy[]                 @relation("sim_legacy_created_byToauth_user")
+  sim_legacy_sim_legacy_modified_byToauth_user                                 sim_legacy[]                 @relation("sim_legacy_modified_byToauth_user")
+  sim_service_status_sim_service_status_created_byToauth_user                  sim_service_status[]         @relation("sim_service_status_created_byToauth_user")
+  sim_service_status_sim_service_status_modified_byToauth_user                 sim_service_status[]         @relation("sim_service_status_modified_byToauth_user")
+  sim_unassigned_sim_unassigned_created_byToauth_user                          sim_unassigned[]             @relation("sim_unassigned_created_byToauth_user")
+  sim_unassigned_sim_unassigned_modified_byToauth_user                         sim_unassigned[]             @relation("sim_unassigned_modified_byToauth_user")
+  sim_unassigned_l_sim_unassigned_l_created_byToauth_user                      sim_unassigned_l[]           @relation("sim_unassigned_l_created_byToauth_user")
+  sim_unassigned_l_sim_unassigned_l_modified_byToauth_user                     sim_unassigned_l[]           @relation("sim_unassigned_l_modified_byToauth_user")
+  user_alert_user_alert_created_byToauth_user                                  user_alert[]                 @relation("user_alert_created_byToauth_user")
+  user_alert_user_alert_modified_byToauth_user                                 user_alert[]                 @relation("user_alert_modified_byToauth_user")
+  user_oneclick                                                                user_oneclick[]
+  user_sim_user_sim_created_byToauth_user                                      user_sim[]                   @relation("user_sim_created_byToauth_user")
+  user_sim_user_sim_modified_byToauth_user                                     user_sim[]                   @relation("user_sim_modified_byToauth_user")
+  user_sim_user_sim_user_idToauth_user                                         user_sim[]                   @relation("user_sim_user_idToauth_user")
+  user_sim_l_user_sim_l_created_byToauth_user                                  user_sim_l[]                 @relation("user_sim_l_created_byToauth_user")
+  user_sim_l_user_sim_l_modified_byToauth_user                                 user_sim_l[]                 @relation("user_sim_l_modified_byToauth_user")
+  user_sim_l_user_sim_l_user_idToauth_user                                     user_sim_l[]                 @relation("user_sim_l_user_idToauth_user")
+}
+
+model backup_status {
+  id          Int     @id @default(autoincrement())
+  icc         String? @db.VarChar(512)
+  status      String? @db.VarChar(512)
+  customer_id String? @db.VarChar(512)
+  updated     String? @db.Char(1)
+  restore_sim String? @db.Char(1)
+  company_id  String? @db.VarChar(512)
+}
+
+model billing_comments {
+  id                                                Int        @id @default(autoincrement())
+  company_id                                        Int?
+  comment_month                                     Int?
+  comment_year                                      Int?
+  admin_comment                                     String?
+  billing_type                                      String?    @db.VarChar(512)
+  created_on                                        DateTime?  @db.Timestamp(6)
+  is_active                                         String?    @db.Char(1)
+  created_by                                        Int?
+  modified_on                                       DateTime?  @db.Timestamp(6)
+  modified_by                                       Int?
+  company                                           company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_billing_comments_created_byToauth_user  auth_user? @relation("billing_comments_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_billing_comments_modified_byToauth_user auth_user? @relation("billing_comments_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model billing_company_details {
+  id                       Int                      @id @default(autoincrement())
+  summary_id               Int?
+  plan_id                  Int?
+  plan_name                String?                  @db.VarChar(512)
+  commercial_group         String?                  @db.VarChar(512)
+  sims                     Json?                    @db.Json
+  mb_plan                  Int?
+  consumption_data         Float?
+  consumption_data_over    Float?
+  consumption_sms          Int?
+  consumption_voice        Float?
+  sims_active              Int?
+  value_data               Int?
+  value_data_extra         Int?
+  value_sms                Int?
+  value_voice              Int?
+  total                    Int?
+  paid_data_over           String?                  @db.Char(1)
+  discount                 Json?                    @db.Json
+  created_on               DateTime?                @db.Timestamp(6)
+  total_sims_with_discount Int?
+  odoo_invoice_line_id     Int?
+  billing_company_summary  billing_company_summary? @relation(fields: [summary_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([summary_id], map: "summary_id_idx")
+}
+
+model billing_company_summary {
+  id                      Int                       @id @default(autoincrement())
+  company_id              Int?
+  start_date              DateTime?                 @db.Timestamp(6)
+  end_date                DateTime?                 @db.Timestamp(6)
+  is_global               String?                   @db.Char(1)
+  sims                    Int?
+  sims_active             Int?
+  dc_exists               String?                   @db.Char(1)
+  mb_plan                 String?
+  mb                      String?
+  sms                     String?
+  voice                   String?
+  value_plan              String?
+  value_over_data         String?
+  value_sms               String?
+  value_voice             String?
+  created_on              DateTime?                 @db.Timestamp(6)
+  billing_sent            String?                   @db.Char(1)
+  billing_sent_on         DateTime?                 @db.Timestamp(6)
+  odoo_invoice_id         Int?
+  paid_oneclick           String?                   @db.Char(1)
+  total                   Int?
+  service_provider        String?                   @db.VarChar(512)
+  billing_company_details billing_company_details[]
+
+  @@index([company_id])
+  @@index([end_date], map: "end_date_idx")
+  @@index([start_date], map: "start_date_idx")
+}
+
+model billing_details_legacy {
+  id                       Int                     @id @default(autoincrement())
+  summary_id               Int?
+  plan_id                  Int?
+  plan_name                String?                 @db.VarChar(512)
+  commercial_group         String?                 @db.VarChar(512)
+  sims                     Json?                   @db.Json
+  mb_plan                  Float?
+  consumption_data         Float?
+  sims_active              Float?
+  flat_fee                 Float?
+  total                    Int?
+  proration                String?                 @db.Char(1)
+  discount                 Json?                   @db.Json
+  created_on               DateTime?               @db.Timestamp(6)
+  total_sims_with_discount Int?
+  odoo_invoice_line_id     Int?
+  billing_summary_legacy   billing_summary_legacy? @relation(fields: [summary_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model billing_summary_legacy {
+  id                     Int                      @id @default(autoincrement())
+  company_id             Int?
+  start_date             DateTime?                @db.Timestamp(6)
+  end_date               DateTime?                @db.Timestamp(6)
+  sims                   Int?
+  sims_active            Int?
+  dc_exists              String?                  @db.Char(1)
+  flat_fee               String?
+  mb_plan                String?
+  created_on             DateTime?                @db.Timestamp(6)
+  billing_sent           String?                  @db.Char(1)
+  billing_sent_on        DateTime?                @db.Timestamp(6)
+  odoo_invoice_id        Int?
+  paid_oneclick          String?                  @db.Char(1)
+  service_provider       Int?
+  billing_details_legacy billing_details_legacy[]
+}
+
+model carrier {
+  id                                       Int         @id @default(autoincrement())
+  name                                     String?     @db.VarChar(512)
+  description                              String?
+  global_enable                            String?     @db.Char(1)
+  is_active                                String?     @db.Char(1)
+  created_on                               DateTime?   @db.Timestamp(6)
+  created_by                               Int?
+  modified_on                              DateTime?   @db.Timestamp(6)
+  modified_by                              Int?
+  type_sim                                 Int?
+  auth_user_carrier_created_byToauth_user  auth_user?  @relation("carrier_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_carrier_modified_byToauth_user auth_user?  @relation("carrier_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan_data_plan_carrierTocarrier     data_plan[] @relation("data_plan_carrierTocarrier")
+}
+
+model change_plan {
+  id                                           Int        @id @default(autoincrement())
+  data_plan_id                                 Int?
+  sim_id                                       Int?
+  user_id                                      Int?
+  plan_change                                  String?    @db.Char(1)
+  cancel_by_admin                              String?    @db.Char(1)
+  cancel_by_user                               String?    @db.Char(1)
+  details                                      String?
+  is_active                                    String?    @db.Char(1)
+  created_on                                   DateTime?  @db.Timestamp(6)
+  created_by                                   Int?
+  modified_on                                  DateTime?  @db.Timestamp(6)
+  modified_by                                  Int?
+  auth_user_change_plan_created_byToauth_user  auth_user? @relation("change_plan_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan                                    data_plan? @relation(fields: [data_plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_change_plan_modified_byToauth_user auth_user? @relation("change_plan_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sim                                          sim?       @relation(fields: [sim_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_change_plan_user_idToauth_user     auth_user? @relation("change_plan_user_idToauth_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model commune {
+  id                                       Int        @id @default(autoincrement())
+  region                                   String?    @db.VarChar(512)
+  name                                     String?    @db.VarChar(512)
+  is_active                                String?    @db.Char(1)
+  created_on                               DateTime?  @db.Timestamp(6)
+  created_by                               Int?
+  modified_on                              DateTime?  @db.Timestamp(6)
+  modified_by                              Int?
+  auth_user_commune_created_byToauth_user  auth_user? @relation("commune_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_commune_modified_byToauth_user auth_user? @relation("commune_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model company {
+  id                                     Int                      @id @default(autoincrement())
+  company_uuid                           String?                  @db.VarChar(512)
+  name                                   String?                  @db.VarChar(512)
+  rut                                    String?                  @db.VarChar(512)
+  phone                                  String?                  @db.VarChar(512)
+  name_contact                           String?                  @db.VarChar(512)
+  email                                  String?                  @db.VarChar(512)
+  created_on                             DateTime?                @db.Timestamp(6)
+  send_billing                           String?                  @db.Char(1)
+  city                                   String?                  @db.VarChar(512)
+  ea_id                                  String?
+  odoo_sync                              String?                  @db.Char(1)
+  line_of_business                       String?                  @db.VarChar(512)
+  country_id                             Int?
+  odoo_id                                Int?
+  street                                 String?                  @db.VarChar(512)
+  distribution_email                     String?                  @db.VarChar(512)
+  dte_contact                            String?                  @db.VarChar(512)
+  state_id                               Int?
+  is_company                             String?                  @db.Char(1)
+  deactivated                            String?                  @db.Char(1)
+  email_billing                          String?
+  modified_on                            DateTime?                @db.Timestamp(6)
+  email_imei_change                      String?
+  email_over_consumption                 String?
+  client_type                            Int?
+  email_prepaid_expiration               String?
+  billing_comments                       billing_comments[]
+  states_odoo                            states_odoo?             @relation(fields: [state_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  company_entitle                        company_entitle[]
+  company_sim                            company_sim[]
+  company_sim_assigned                   company_sim_assigned[]
+  company_sim_assigned_l                 company_sim_assigned_l[]
+  company_sim_l                          company_sim_l[]
+  discount_company                       discount_company[]
+  legacy_del_legacy_del_companyTocompany legacy_del[]             @relation("legacy_del_companyTocompany")
+  shipping                               shipping[]
+  sim_sim_companyTocompany               sim[]                    @relation("sim_companyTocompany")
+  sim_legacy_sim_legacy_companyTocompany sim_legacy[]             @relation("sim_legacy_companyTocompany")
+  sim_unassigned_l                       sim_unassigned_l[]
+}
+
+model company_backup_detail {
+  id                     Int       @id @default(autoincrement())
+  company_email          String?   @db.VarChar(512)
+  data_company           Json?     @db.Json
+  total_sims             Int?
+  created_on             DateTime? @db.Timestamp(6)
+  company_id             Int?
+  completed_on           DateTime? @db.Timestamp(6)
+  deactivate_retry_count Int?
+  backup_retry_count     Int?
+  deactivation_status    Int?
+}
+
+model company_entitle {
+  id                                               Int        @id @default(autoincrement())
+  company_id                                       Int?
+  entitlement                                      Int?
+  is_active                                        String?    @db.Char(1)
+  created_on                                       DateTime?  @db.Timestamp(6)
+  created_by                                       Int?
+  modified_on                                      DateTime?  @db.Timestamp(6)
+  modified_by                                      Int?
+  company                                          company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_entitle_created_byToauth_user  auth_user? @relation("company_entitle_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_entitle_modified_byToauth_user auth_user? @relation("company_entitle_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model company_pool {
+  id                                Int       @id @default(autoincrement())
+  company_id                        Int?
+  record_date                       DateTime? @db.Date
+  start_date                        DateTime? @db.Timestamp(6)
+  end_date                          DateTime? @db.Timestamp(6)
+  is_global                         String?   @db.Char(1)
+  plan_id                           Int?
+  plan_name                         String?   @db.VarChar(512)
+  commercial_group                  String?   @db.VarChar(512)
+  service_provider                  String?   @db.VarChar(512)
+  sims_asignadas_activas_periodo    String?
+  sims_asignadas_no_activas_periodo String?
+  sims_desasignadas_periodo         String?
+  consumption_data                  Float?
+  consumption_data_over             Float?
+  consumption_sms                   Int?
+  consumption_voice                 Float?
+  created_on                        DateTime? @db.Timestamp(6)
+  modified_on                       DateTime? @db.Timestamp(6)
+  mb_plan                           Float?
+  alert_status                      String?   @db.VarChar(512)
+  num_sims_activas_periodo          Int?
+}
+
+model company_sim {
+  id                                           Int        @id @default(autoincrement())
+  company_id                                   Int?
+  sim_list                                     String?
+  is_active                                    String?    @db.Char(1)
+  created_on                                   DateTime?  @db.Timestamp(6)
+  created_by                                   Int?
+  modified_on                                  DateTime?  @db.Timestamp(6)
+  modified_by                                  Int?
+  company                                      company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_created_byToauth_user  auth_user? @relation("company_sim_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_modified_byToauth_user auth_user? @relation("company_sim_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model company_sim_assigned {
+  id                                                    Int        @id @default(autoincrement())
+  company_id                                            Int?
+  sim_icc                                               String?    @db.VarChar(512)
+  is_active                                             String?    @db.Char(1)
+  created_on                                            DateTime?  @db.Timestamp(6)
+  created_by                                            Int?
+  modified_on                                           DateTime?  @db.Timestamp(6)
+  modified_by                                           Int?
+  company                                               company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_assigned_created_byToauth_user  auth_user? @relation("company_sim_assigned_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_assigned_modified_byToauth_user auth_user? @relation("company_sim_assigned_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([company_id])
+  @@index([created_on])
+  @@index([sim_icc])
+}
+
+model company_sim_assigned_l {
+  id                                                      Int        @id @default(autoincrement())
+  company_id                                              Int?
+  sim_icc                                                 String?    @db.VarChar(512)
+  is_active                                               String?    @db.Char(1)
+  created_on                                              DateTime?  @db.Timestamp(6)
+  created_by                                              Int?
+  modified_on                                             DateTime?  @db.Timestamp(6)
+  modified_by                                             Int?
+  company                                                 company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_assigned_l_created_byToauth_user  auth_user? @relation("company_sim_assigned_l_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_assigned_l_modified_byToauth_user auth_user? @relation("company_sim_assigned_l_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model company_sim_l {
+  id                                             Int        @id @default(autoincrement())
+  company_id                                     Int?
+  sim_list                                       String?
+  is_active                                      String?    @db.Char(1)
+  created_on                                     DateTime?  @db.Timestamp(6)
+  created_by                                     Int?
+  modified_on                                    DateTime?  @db.Timestamp(6)
+  modified_by                                    Int?
+  company                                        company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_l_created_byToauth_user  auth_user? @relation("company_sim_l_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_company_sim_l_modified_byToauth_user auth_user? @relation("company_sim_l_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model custom_syslog {
+  id                Int       @id @default(autoincrement())
+  user_id           Int?
+  user_name         String?   @db.VarChar(512)
+  event_name        String?   @db.VarChar(512)
+  event_description String?
+  created_on        DateTime? @db.Timestamp(6)
+  company_id        Int?
+  icc               String?   @db.VarChar(512)
+}
+
+model data_plan {
+  id                                         Int                @id @default(autoincrement())
+  carrier                                    Int?
+  name                                       String?            @db.VarChar(512)
+  mb_plan                                    Float?
+  price                                      Int?
+  mb_extra                                   Int?
+  is_active                                  String?            @db.Char(1)
+  created_on                                 DateTime?          @db.Timestamp(6)
+  created_by                                 Int?
+  modified_on                                DateTime?          @db.Timestamp(6)
+  modified_by                                Int?
+  commercial_group                           String?            @db.VarChar(512)
+  voice_mo                                   Int?
+  sms_mt                                     Int?
+  sms_mo                                     Int?
+  voice_mt                                   Int?
+  type_sim                                   Int?
+  change_plan                                change_plan[]
+  carrier_data_plan_carrierTocarrier         carrier?           @relation("data_plan_carrierTocarrier", fields: [carrier], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_data_plan_created_byToauth_user  auth_user?         @relation("data_plan_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_data_plan_modified_byToauth_user auth_user?         @relation("data_plan_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan_odoo                             data_plan_odoo[]
+  discount_company                           discount_company[]
+  order_sim_order_sim_data_planTodata_plan   order_sim[]        @relation("order_sim_data_planTodata_plan")
+}
+
+model data_plan_odoo {
+  id                                              Int        @id @default(autoincrement())
+  odoo_id                                         Int?
+  plan_id                                         Int?
+  type_charge                                     String?    @db.VarChar(512)
+  display_name                                    String?    @db.VarChar(512)
+  is_active                                       String?    @db.Char(1)
+  created_on                                      DateTime?  @db.Timestamp(6)
+  created_by                                      Int?
+  modified_on                                     DateTime?  @db.Timestamp(6)
+  modified_by                                     Int?
+  auth_user_data_plan_odoo_created_byToauth_user  auth_user? @relation("data_plan_odoo_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_data_plan_odoo_modified_byToauth_user auth_user? @relation("data_plan_odoo_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan                                       data_plan? @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model discount_company {
+  id                                                Int             @id @default(autoincrement())
+  plan_id                                           Int?
+  company_id                                        Int?
+  discount_ammount                                  Float?
+  discount_type                                     Int?
+  is_active                                         String?         @db.Char(1)
+  created_on                                        DateTime?       @db.Timestamp(6)
+  created_by                                        Int?
+  modified_on                                       DateTime?       @db.Timestamp(6)
+  modified_by                                       Int?
+  discount_voice_type                               Int?
+  discount_sms_type                                 Int?
+  discount_sms_ammount                              Float?
+  discount_voice_ammount                            Float?
+  sim_list                                          String?
+  applied_to                                        Int?
+  company                                           company?        @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_discount_company_created_byToauth_user  auth_user?      @relation("discount_company_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_discount_company_modified_byToauth_user auth_user?      @relation("discount_company_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan                                         data_plan?      @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  discount_sims                                     discount_sims[]
+}
+
+model discount_sims {
+  id                                             Int               @id @default(autoincrement())
+  discount_id                                    Int?
+  sim_icc                                        String?           @db.VarChar(512)
+  is_active                                      String?           @db.Char(1)
+  created_on                                     DateTime?         @db.Timestamp(6)
+  created_by                                     Int?
+  modified_on                                    DateTime?         @db.Timestamp(6)
+  modified_by                                    Int?
+  auth_user_discount_sims_created_byToauth_user  auth_user?        @relation("discount_sims_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  discount_company                               discount_company? @relation(fields: [discount_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_discount_sims_modified_byToauth_user auth_user?        @relation("discount_sims_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model economic_activities {
+  id           Int     @id @default(autoincrement())
+  display_name String? @db.VarChar(512)
+  code         String? @db.VarChar(512)
+  odoo_id      Int?
+  name         String? @db.VarChar(512)
+}
+
+model global_preference {
+  id                                                 Int        @id @default(autoincrement())
+  server_status                                      String?    @db.Char(1)
+  price_sim                                          Int?
+  is_active                                          String?    @db.Char(1)
+  created_on                                         DateTime?  @db.Timestamp(6)
+  created_by                                         Int?
+  modified_on                                        DateTime?  @db.Timestamp(6)
+  modified_by                                        Int?
+  auth_user_global_preference_created_byToauth_user  auth_user? @relation("global_preference_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_global_preference_modified_byToauth_user auth_user? @relation("global_preference_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model invoice_nullified {
+  id                     Int        @id @default(autoincrement())
+  type_bill              Int?
+  summary_id             Int?
+  user_id                Int?
+  username               String?    @db.VarChar(512)
+  token                  String?    @db.VarChar(512)
+  auth_code_order        String?    @db.VarChar(512)
+  auth_code              String?    @db.VarChar(512)
+  balance                Float?
+  nullified_amount_order Float?
+  nullified_amount       Float?
+  auth_amount            Float?
+  auth_date              String?    @db.VarChar(512)
+  buy_order              String?    @db.VarChar(512)
+  commerce_id            String?    @db.VarChar(512)
+  created_on             DateTime?  @db.Timestamp(6)
+  data_request           String?
+  data_response          String?
+  auth_user              auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model invoice_reversed {
+  id                 Int        @id @default(autoincrement())
+  type_bill          Int?
+  summary_id         Int?
+  user_id            Int?
+  username           String?    @db.VarChar(512)
+  amount             Float?
+  response_code      Int?
+  auth_code          String?    @db.VarChar(512)
+  credit_card_type   String?    @db.VarChar(512)
+  last_4_card_digits String?    @db.VarChar(512)
+  transaction_id     String?    @db.VarChar(512)
+  buy_order          String?    @db.VarChar(512)
+  created_on         DateTime?  @db.Timestamp(6)
+  reverse_code       String?    @db.VarChar(512)
+  reversed           String?    @db.Char(1)
+  auth_user          auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model legacy_del {
+  id                                          Int        @id @default(autoincrement())
+  data_plan_id                                String?    @db.VarChar(512)
+  serial_number                               String?    @db.VarChar(512)
+  imei                                        String?    @db.VarChar(512)
+  msisdn                                      String?    @db.VarChar(512)
+  activation_date                             DateTime?  @db.Date
+  deactivation_date                           DateTime?  @db.Date
+  client                                      Int?
+  company                                     Int?
+  created_on                                  DateTime?  @db.Timestamp(6)
+  is_active                                   String?    @db.Char(1)
+  created_by                                  Int?
+  modified_on                                 DateTime?  @db.Timestamp(6)
+  modified_by                                 Int?
+  auth_user_legacy_del_clientToauth_user      auth_user? @relation("legacy_del_clientToauth_user", fields: [client], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  company_legacy_del_companyTocompany         company?   @relation("legacy_del_companyTocompany", fields: [company], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_legacy_del_created_byToauth_user  auth_user? @relation("legacy_del_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_legacy_del_modified_byToauth_user auth_user? @relation("legacy_del_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model log_company_assigned {
+  id                                                    Int        @id @default(autoincrement())
+  date_billing                                          DateTime?  @db.Timestamp(6)
+  assigneds                                             Int?
+  actives                                               Int?
+  billing_type                                          String?    @db.VarChar(512)
+  is_active                                             String?    @db.Char(1)
+  created_on                                            DateTime?  @db.Timestamp(6)
+  created_by                                            Int?
+  modified_on                                           DateTime?  @db.Timestamp(6)
+  modified_by                                           Int?
+  company_id                                            Int?
+  complete                                              String?    @default("F") @db.VarChar(1)
+  auth_user_log_company_assigned_created_byToauth_user  auth_user? @relation("log_company_assigned_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_log_company_assigned_modified_byToauth_user auth_user? @relation("log_company_assigned_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model log_sim_prepay {
+  id                                              Int        @id @default(autoincrement())
+  user_id                                         String?    @db.VarChar(512)
+  sim_icc                                         String?    @db.VarChar(512)
+  until_date                                      DateTime?  @db.Date
+  is_active                                       String?    @db.Char(1)
+  created_on                                      DateTime?  @db.Timestamp(6)
+  created_by                                      Int?
+  modified_on                                     DateTime?  @db.Timestamp(6)
+  modified_by                                     Int?
+  auth_user_log_sim_prepay_created_byToauth_user  auth_user? @relation("log_sim_prepay_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_log_sim_prepay_modified_byToauth_user auth_user? @relation("log_sim_prepay_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model mail_company_notifications {
+  id                                                          Int        @id @default(autoincrement())
+  company_id                                                  Int?
+  notification_type                                           Int?
+  configured_actions                                          Int?
+  is_active                                                   String?    @db.Char(1)
+  created_on                                                  DateTime?  @db.Timestamp(6)
+  created_by                                                  Int?
+  modified_on                                                 DateTime?  @db.Timestamp(6)
+  modified_by                                                 Int?
+  email                                                       String?    @db.VarChar(512)
+  alert2_threshold                                            Int?
+  alert1_threshold                                            Int?
+  deactivation_threshold                                      Int?
+  auth_user_mail_company_notifications_created_byToauth_user  auth_user? @relation("mail_company_notifications_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_mail_company_notifications_modified_byToauth_user auth_user? @relation("mail_company_notifications_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model mail_event {
+  id                                          Int        @id @default(autoincrement())
+  event_type                                  Int?
+  email                                       String?
+  is_active                                   String?    @db.Char(1)
+  created_on                                  DateTime?  @db.Timestamp(6)
+  created_by                                  Int?
+  modified_on                                 DateTime?  @db.Timestamp(6)
+  modified_by                                 Int?
+  auth_user_mail_event_created_byToauth_user  auth_user? @relation("mail_event_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_mail_event_modified_byToauth_user auth_user? @relation("mail_event_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model mail_sim_notifications {
+  id                                                      Int        @id @default(autoincrement())
+  sim_id                                                  Int?
+  notification_type                                       Int?
+  is_active                                               String?    @db.Char(1)
+  email                                                   String?    @db.VarChar(512)
+  created_on                                              DateTime?  @db.Timestamp(6)
+  created_by                                              Int?
+  modified_on                                             DateTime?  @db.Timestamp(6)
+  modified_by                                             Int?
+  configured_actions                                      Int?
+  auth_user_mail_sim_notifications_created_byToauth_user  auth_user? @relation("mail_sim_notifications_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_mail_sim_notifications_modified_byToauth_user auth_user? @relation("mail_sim_notifications_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model oneclick_invoice {
+  id                 Int        @id @default(autoincrement())
+  type_bill          Int?
+  summary_id         Int?
+  user_id            Int?
+  username           String?    @db.VarChar(512)
+  amount             Float?
+  response_code      Int?
+  auth_code          String?    @db.VarChar(512)
+  credit_card_type   String?    @db.VarChar(512)
+  last_4_card_digits String?    @db.VarChar(512)
+  transaction_id     String?    @db.VarChar(512)
+  buy_order          String?    @db.VarChar(512)
+  created_on         DateTime?  @db.Timestamp(6)
+  auth_user          auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model order_sim {
+  id                                         Int        @id @default(autoincrement())
+  order_uuid                                 String?    @db.VarChar(512)
+  user_id                                    Int?
+  opertor_sim                                String?    @db.VarChar(512)
+  data_plan                                  Int?
+  quantity                                   String?    @db.VarChar(512)
+  is_active                                  String?    @db.Char(1)
+  created_on                                 DateTime?  @db.Timestamp(6)
+  created_by                                 Int?
+  modified_on                                DateTime?  @db.Timestamp(6)
+  modified_by                                Int?
+  sim_size                                   Int?
+  auth_user_order_sim_created_byToauth_user  auth_user? @relation("order_sim_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  data_plan_order_sim_data_planTodata_plan   data_plan? @relation("order_sim_data_planTodata_plan", fields: [data_plan], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_order_sim_modified_byToauth_user auth_user? @relation("order_sim_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_order_sim_user_idToauth_user     auth_user? @relation("order_sim_user_idToauth_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model region {
+  id                                      Int        @id @default(autoincrement())
+  name                                    String?    @db.VarChar(512)
+  nominatim_name                          String?    @db.VarChar(512)
+  is_active                               String?    @db.Char(1)
+  created_on                              DateTime?  @db.Timestamp(6)
+  created_by                              Int?
+  modified_on                             DateTime?  @db.Timestamp(6)
+  modified_by                             Int?
+  auth_user_region_created_byToauth_user  auth_user? @relation("region_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_region_modified_byToauth_user auth_user? @relation("region_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model shipping {
+  id                                        Int        @id @default(autoincrement())
+  order_id                                  String?
+  shipping_uuid                             String?    @db.VarChar(512)
+  address                                   String?    @db.VarChar(512)
+  number_address                            String?    @db.VarChar(512)
+  country                                   String?    @db.VarChar(512)
+  commune                                   String?    @db.VarChar(512)
+  is_active                                 String?    @db.Char(1)
+  created_on                                DateTime?  @db.Timestamp(6)
+  created_by                                Int?
+  modified_on                               DateTime?  @db.Timestamp(6)
+  modified_by                               Int?
+  tracking_number_sent                      String?    @db.Char(1)
+  comments                                  String?
+  shipping_type                             Int?
+  contact_name                              String?    @db.VarChar(512)
+  address_note                              String?    @db.VarChar(512)
+  contact_phone_number                      String?    @db.VarChar(512)
+  company_id                                Int?
+  tracking_reference                        String?
+  stage                                     Int?
+  tracking_number                           String?    @db.VarChar(512)
+  shipping_category                         Int?
+  company                                   company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_shipping_created_byToauth_user  auth_user? @relation("shipping_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_shipping_modified_byToauth_user auth_user? @relation("shipping_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sim {
+  id                                   Int           @id @default(autoincrement())
+  data_plan_id                         Int?
+  serial_number                        String?       @unique(map: "serial_number_idx") @db.VarChar(512)
+  imei                                 String?       @db.VarChar(512)
+  msisdn                               String?       @db.VarChar(512)
+  consumption_monthly_data_val         Float?
+  consumption_monthly_data_limit       Float?
+  consumption_monthly_sms_val          Int?
+  consumption_monthly_sms_limit        Int?
+  consumption_monthly_voice_val        Int?
+  consumption_monthly_voice_limit      Int?
+  consumption_daily_data_val           Float?
+  consumption_daily_data_limit         Float?
+  consumption_daily_sms_val            Int?
+  consumption_daily_sms_limit          Int?
+  consumption_daily_voice_val          Int?
+  consumption_daily_voice_limit        Int?
+  used                                 String?       @db.Char(1)
+  status                               String?       @db.VarChar(512)
+  activation_date                      DateTime?     @db.Date
+  last_con                             DateTime?     @db.Timestamp(6)
+  operator_sim                         String?       @db.VarChar(512)
+  alias_sim                            String?       @db.VarChar(512)
+  updated_on                           DateTime?     @db.Timestamp(6)
+  sim_global                           String?       @db.Char(1)
+  sim_apn                              String?       @db.VarChar(512)
+  gpr_status                           String?       @db.VarChar(512)
+  gpr_last_conn_start                  String?       @db.VarChar(512)
+  gpr_last_conn_stop                   String?       @db.VarChar(512)
+  country                              String?       @db.VarChar(512)
+  comm_module_manufacturer             String?       @db.VarChar(512)
+  comm_module_model                    String?       @db.VarChar(512)
+  imei_last_change                     String?       @db.VarChar(512)
+  ip                                   String?       @db.VarChar(512)
+  static_ip                            String?       @db.VarChar(512)
+  latitude                             Float?
+  longitude                            Float?
+  datahome                             String?       @db.Char(1)
+  dataroaming                          String?       @db.Char(1)
+  smsoriginatedhome                    String?       @db.Char(1)
+  smsoriginatedinternational           String?       @db.Char(1)
+  smsoriginatedroaming                 String?       @db.Char(1)
+  smsterminatedhome                    String?       @db.Char(1)
+  smsterminatedroaming                 String?       @db.Char(1)
+  voiceoriginatedhome                  String?       @db.Char(1)
+  voiceoriginatedinternational         String?       @db.Char(1)
+  voiceoriginatedroaming               String?       @db.Char(1)
+  voiceterminatedhome                  String?       @db.Char(1)
+  voiceterminatedroaming               String?       @db.Char(1)
+  lte_enabled                          String?       @db.Char(1)
+  sim_model                            String?       @db.VarChar(512)
+  is_active                            String?       @db.Char(1)
+  created_on                           DateTime?     @db.Timestamp(6)
+  created_by                           Int?
+  modified_on                          DateTime?     @db.Timestamp(6)
+  modified_by                          Int?
+  commercial_group                     String?       @db.VarChar(512)
+  activate_on_new_cicle                String?       @db.Char(1)
+  over_consumption_conf                Int?
+  customer_id                          String?       @db.VarChar(512)
+  email_alert_notification             String?       @db.VarChar(512)
+  notify_alert                         String?       @db.Char(1)
+  not_billing                          String?       @db.Char(1)
+  send_alert_imei                      String?       @db.Char(1)
+  email_for_alert_imei                 String?       @db.VarChar(512)
+  until_date                           DateTime?     @db.Date
+  prepay                               String?       @db.Char(1)
+  sms_data                             String?       @db.Char(1)
+  service_provider                     String?       @db.VarChar(512)
+  rat_type                             Int?
+  imei_change_conf                     Int?
+  company                              Int?
+  change_plan                          change_plan[]
+  company_sim_companyTocompany         company?      @relation("sim_companyTocompany", fields: [company], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_created_byToauth_user  auth_user?    @relation("sim_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_modified_byToauth_user auth_user?    @relation("sim_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([company])
+}
+
+model sim_gsm_status {
+  id                                              Int        @id @default(autoincrement())
+  sim_icc                                         String?    @db.VarChar(512)
+  status_sim                                      String?    @db.VarChar(512)
+  updated_on                                      DateTime?  @db.Timestamp(6)
+  is_active                                       String?    @db.Char(1)
+  created_on                                      DateTime?  @db.Timestamp(6)
+  created_by                                      Int?
+  modified_on                                     DateTime?  @db.Timestamp(6)
+  modified_by                                     Int?
+  auth_user_sim_gsm_status_created_byToauth_user  auth_user? @relation("sim_gsm_status_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_gsm_status_modified_byToauth_user auth_user? @relation("sim_gsm_status_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sim_legacy {
+  id                                          Int        @id @default(autoincrement())
+  data_plan_id                                String?    @db.VarChar(512)
+  serial_number                               String?    @db.VarChar(512)
+  imei                                        String?    @db.VarChar(512)
+  msisdn                                      String?    @db.VarChar(512)
+  activation_date                             DateTime?  @db.Date
+  deactivation_date                           DateTime?  @db.Date
+  client                                      Int?
+  alias_sim                                   String?    @db.VarChar(512)
+  company                                     Int?
+  status                                      String?    @db.VarChar(512)
+  created_on                                  DateTime?  @db.Timestamp(6)
+  modified_on                                 DateTime?  @db.Timestamp(6)
+  is_active                                   String?    @db.Char(1)
+  created_by                                  Int?
+  modified_by                                 Int?
+  service_provider                            Int?
+  auth_user_sim_legacy_clientToauth_user      auth_user? @relation("sim_legacy_clientToauth_user", fields: [client], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  company_sim_legacy_companyTocompany         company?   @relation("sim_legacy_companyTocompany", fields: [company], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_legacy_created_byToauth_user  auth_user? @relation("sim_legacy_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_legacy_modified_byToauth_user auth_user? @relation("sim_legacy_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sim_service_status {
+  id                                                  Int        @id @default(autoincrement())
+  sim_icc                                             String?    @db.VarChar(512)
+  status_sim                                          Json?      @db.Json
+  updated_on                                          DateTime?  @db.Timestamp(6)
+  is_active                                           String?    @db.Char(1)
+  created_on                                          DateTime?  @db.Timestamp(6)
+  created_by                                          Int?
+  modified_on                                         DateTime?  @db.Timestamp(6)
+  modified_by                                         Int?
+  auth_user_sim_service_status_created_byToauth_user  auth_user? @relation("sim_service_status_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_service_status_modified_byToauth_user auth_user? @relation("sim_service_status_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([sim_icc], map: "sim_icc_idx")
+}
+
+model sim_status {
+  id         Int       @id @default(autoincrement())
+  sim_icc    String?   @db.VarChar(512)
+  active_on  DateTime? @db.Timestamp(6)
+  created_on DateTime? @db.Date
+
+  @@index([created_on], map: "idx_created_on")
+  @@index([sim_icc], map: "idx_sim_icc")
+}
+
+model sim_summary {
+  id                              Int       @id @default(autoincrement())
+  summary_icc                     String?   @db.VarChar(512)
+  summary_date                    DateTime? @db.Date
+  consumption_monthly_data_val    Float?
+  consumption_monthly_data_limit  Float?
+  consumption_monthly_sms_val     Int?
+  consumption_monthly_sms_limit   Int?
+  consumption_monthly_voice_val   Int?
+  consumption_monthly_voice_limit Int?
+  consumption_daily_data_val      Float?
+  consumption_daily_data_limit    Float?
+  consumption_daily_sms_val       Int?
+  consumption_daily_sms_limit     Int?
+  consumption_daily_voice_val     Int?
+  consumption_daily_voice_limit   Int?
+  status_sim                      String?   @db.VarChar(512)
+  created_on                      DateTime? @db.Timestamp(6)
+  latitude                        Float?
+  longitude                       Float?
+  sim_global                      String?   @db.Char(1)
+  commercial_group                String?   @db.VarChar(512)
+
+  @@index([summary_date], map: "idx_summary_date")
+}
+
+model sim_unassigned {
+  id                                              Int        @id @default(autoincrement())
+  company_id                                      Int?
+  icc                                             String?    @db.VarChar(512)
+  is_active                                       String?    @db.Char(1)
+  created_on                                      DateTime?  @db.Timestamp(6)
+  created_by                                      Int?
+  modified_on                                     DateTime?  @db.Timestamp(6)
+  modified_by                                     Int?
+  auth_user_sim_unassigned_created_byToauth_user  auth_user? @relation("sim_unassigned_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_unassigned_modified_byToauth_user auth_user? @relation("sim_unassigned_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([company_id])
+  @@index([created_on])
+  @@index([icc])
+}
+
+model sim_unassigned_l {
+  id                                                Int        @id @default(autoincrement())
+  company_id                                        Int?
+  icc                                               String?    @db.VarChar(512)
+  is_active                                         String?    @db.Char(1)
+  created_on                                        DateTime?  @db.Timestamp(6)
+  created_by                                        Int?
+  modified_on                                       DateTime?  @db.Timestamp(6)
+  modified_by                                       Int?
+  company                                           company?   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_unassigned_l_created_byToauth_user  auth_user? @relation("sim_unassigned_l_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_sim_unassigned_l_modified_byToauth_user auth_user? @relation("sim_unassigned_l_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sms_sent {
+  id                  Int       @id @default(autoincrement())
+  sim_icc             String?   @db.VarChar(512)
+  text_sent           String?
+  has_delivery_report String?   @db.Char(1)
+  origin_msisdn       String?   @db.VarChar(512)
+  watcher_id          String?   @db.VarChar(512)
+  sent_on             DateTime? @db.Timestamp(6)
+  sent_by             Int?
+  last_update         DateTime? @db.Timestamp(6)
+  status_sms          String?   @db.VarChar(512)
+}
+
+model sms_sent_legacy {
+  id                  Int       @id @default(autoincrement())
+  sim_icc             String?   @db.VarChar(512)
+  text_sent           String?
+  has_delivery_report String?   @db.Char(1)
+  origin_msisdn       String?   @db.VarChar(512)
+  watcher_id          String?   @db.VarChar(512)
+  sent_on             DateTime? @db.Timestamp(6)
+  sent_by             Int?
+  last_update         DateTime? @db.Timestamp(6)
+  status_sms          String?   @db.VarChar(512)
+}
+
+model states_odoo {
+  id           Int       @id @default(autoincrement())
+  display_name String?   @db.VarChar(512)
+  code         String?   @db.VarChar(512)
+  country_id   Int?
+  odoo_id      Int?
+  name         String?   @db.VarChar(512)
+  company      company[]
+}
+
+model user_alert {
+  id                                          Int        @id @default(autoincrement())
+  title                                       String?    @db.VarChar(512)
+  description                                 String?
+  status                                      String?    @db.VarChar(512)
+  is_active                                   String?    @db.Char(1)
+  created_on                                  DateTime?  @db.Timestamp(6)
+  created_by                                  Int?
+  modified_on                                 DateTime?  @db.Timestamp(6)
+  modified_by                                 Int?
+  auth_user_user_alert_created_byToauth_user  auth_user? @relation("user_alert_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_user_alert_modified_byToauth_user auth_user? @relation("user_alert_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_backup_detail {
+  id         Int       @id @default(autoincrement())
+  user_email String?   @db.VarChar(512)
+  data_user  Json?     @db.Json
+  created_on DateTime? @db.Timestamp(6)
+  company_id Int?
+  total_sims Int?
+}
+
+model user_oneclick {
+  id                 Int        @id @default(autoincrement())
+  user_id            Int?
+  username           String?    @db.VarChar(512)
+  tbk_user           String?    @db.VarChar(512)
+  response_code      Int?
+  auth_code          String?    @db.VarChar(512)
+  credit_card_type   String?    @db.VarChar(512)
+  last_4_card_digits String?    @db.VarChar(512)
+  created_on         DateTime?  @db.Timestamp(6)
+  is_active          String?    @db.Char(1)
+  in_process         String?    @db.Char(1)
+  process_fail       String?    @db.Char(1)
+  token_transaction  String?    @db.VarChar(512)
+  auth_user          auth_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_sim {
+  id                                        Int        @id @default(autoincrement())
+  user_id                                   Int?
+  sim_list                                  String?
+  is_active                                 String?    @db.Char(1)
+  created_on                                DateTime?  @db.Timestamp(6)
+  created_by                                Int?
+  modified_on                               DateTime?  @db.Timestamp(6)
+  modified_by                               Int?
+  auth_user_user_sim_created_byToauth_user  auth_user? @relation("user_sim_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_user_sim_modified_byToauth_user auth_user? @relation("user_sim_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_user_sim_user_idToauth_user     auth_user? @relation("user_sim_user_idToauth_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_sim_l {
+  id                                          Int        @id @default(autoincrement())
+  user_id                                     Int?
+  sim_list                                    String?
+  is_active                                   String?    @db.Char(1)
+  created_on                                  DateTime?  @db.Timestamp(6)
+  created_by                                  Int?
+  modified_on                                 DateTime?  @db.Timestamp(6)
+  modified_by                                 Int?
+  auth_user_user_sim_l_created_byToauth_user  auth_user? @relation("user_sim_l_created_byToauth_user", fields: [created_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_user_sim_l_modified_byToauth_user auth_user? @relation("user_sim_l_modified_byToauth_user", fields: [modified_by], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auth_user_user_sim_l_user_idToauth_user     auth_user? @relation("user_sim_l_user_idToauth_user", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
