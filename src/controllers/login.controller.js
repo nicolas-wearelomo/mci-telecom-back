@@ -1,21 +1,21 @@
 const prisma = require("../db");
 const comparePassword = require("../utils/comparePassword");
+const isValidPassword = require("../utils/isValidPassword");
 const signToken = require("../utils/signToken");
 
 const loginUser = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.auth_user.findFirst({
       where: {
-        mail: req.body.user,
+        email: req.body.email,
       },
     });
-    const users = await prisma.user.findMany();
-
     if (!user) return res.status(404).send("Usuario o contraseña incorrecto");
+    const isValid = await isValidPassword(req.body.password, user.password);
 
-    const isValidPassword = await comparePassword(user.password, req.body.password);
+    // const isValidPassword2 = await comparePassword(user.password, req.body.password);
 
-    if (!isValidPassword) return res.status(404).send("Usuario o contraseña incorrecto");
+    if (!isValid) return res.status(404).send("Usuario o contraseña incorrecto");
 
     const token = await signToken(user.id);
 
