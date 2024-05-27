@@ -6,7 +6,7 @@ require("dotenv").config();
 const isAuthenticated = async (req, res, next) => {
   const { id: userId } = req.query;
   try {
-    const token = req.header("Authorization").replace("Bearer ", "");
+    const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
       throw new Error();
