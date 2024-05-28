@@ -2,7 +2,6 @@ const prisma = require("../db");
 
 const updateUser = async (req, res) => {
   const { first_name, last_name } = req.body;
-  console.log(first_name, last_name);
   try {
     const user = await prisma.auth_user.update({
       where: {
