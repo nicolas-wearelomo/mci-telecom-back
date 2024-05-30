@@ -42,6 +42,22 @@ const getAllManufacturers = async (req, res) => {
   }
 };
 
+const getAllSims = async (req, res) => {
+  const { company, service_provider } = req.query;
+  try {
+    const response = await prisma.sim.findMany({
+      where: {
+        company: parseInt(company),
+        service_provider: service_provider,
+      },
+    });
+    res.status(200).send(response);
+  } catch (error) {
+    console.log(error);
+    res.status(200).send(error);
+  }
+};
 module.exports = {
   getAllManufacturers,
+  getAllSims,
 };
