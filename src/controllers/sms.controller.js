@@ -5,6 +5,7 @@ const getHistorySims = async (req, res) => {
   const { serial_number } = req.query;
 
   try {
+    console.log("entroo");
     const sms = await prisma.sms_sent.findMany({
       where: {
         serial_number: serial_number,
