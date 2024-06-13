@@ -14,6 +14,8 @@ const getHistorySims = async (req, res) => {
       },
       take: 50,
     });
+
+    console.log(sms);
     let parsedSms = sms.map((el) => ({
       ...el,
       date: dayjs(el.sent_on).format("DD-MM-YYYY"),
