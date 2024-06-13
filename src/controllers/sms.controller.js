@@ -5,7 +5,6 @@ const getHistorySims = async (req, res) => {
   const { serial_number } = req.query;
 
   try {
-    console.log("entroo");
     const sms = await prisma.sms_sent.findMany({
       where: {
         serial_number: serial_number,
@@ -16,7 +15,6 @@ const getHistorySims = async (req, res) => {
       take: 50,
     });
 
-    console.log(sms);
     let parsedSms = sms.map((el) => ({
       ...el,
       date: dayjs(el.sent_on).format("DD-MM-YYYY"),
