@@ -12,7 +12,7 @@ const updateUser = async (req, res) => {
         last_name: last_name,
       },
     });
-    console.log(user);
+
     res.status(201).send(user);
   } catch (error) {
     console.log(error);

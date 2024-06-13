@@ -5,5 +5,9 @@ const router = Router();
 
 router.get("/manufactures", simsControllers.getAllManufacturers);
 router.get("/simsByCompany", simsControllers.getAllSims);
+router.get("/simsLegacy", simsControllers.getAllSimsLegacy);
+router.get("/detail", simsControllers.getSimsDetail);
+
+router.put("/updateAlias", simsControllers.updateAliasSim);
 
 module.exports = router;

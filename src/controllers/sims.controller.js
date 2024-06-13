@@ -1,3 +1,4 @@
+const dayjs = require("dayjs");
 const prisma = require("../db");
 
 const getAllManufacturers = async (req, res) => {
@@ -50,6 +51,9 @@ const getAllSims = async (req, res) => {
         company: parseInt(company),
         service_provider: service_provider,
       },
+      orderBy: {
+        id: "asc",
+      },
     });
     res.status(200).send(response);
   } catch (error) {
@@ -57,7 +61,80 @@ const getAllSims = async (req, res) => {
     res.status(200).send(error);
   }
 };
+
+const getAllSimsLegacy = async (req, res) => {
+  const { company } = req.query;
+  try {
+    const response = await prisma.sim_legacy.findMany({
+      where: {
+        company: parseInt(company),
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    res.status(200).send(response);
+  } catch (error) {
+    console.log(error);
+    res.status(200).send(error);
+  }
+};
+
+const updateAliasSim = async (req, res) => {
+  const { id } = req.query;
+  try {
+    const response = await prisma.sim.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        alias_sim: req.body.alias_sim,
+      },
+    });
+    res.status(201).send(response);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error);
+  }
+};
+const getSimsDetail = async (req, res) => {
+  const { serial_number, from, to } = req.query;
+
+  try {
+    const response = await prisma.sim_summary.findMany({
+      where: {
+        summary_icc: serial_number,
+        summary_date: {
+          gte: dayjs(from).toDate(), // gte (greater than or equal) para 'from'
+          lte: dayjs(to).toDate(), // lte (less than or equal) para 'to'
+        },
+      },
+      select: {
+        summary_icc: true,
+        summary_date: true,
+        consumption_daily_data_val: true,
+        consumption_daily_sms_val: true,
+        consumption_monthly_data_val: true,
+      },
+      orderBy: {
+        summary_date: "asc",
+      },
+    });
+
+    let parsedDate = response.map((el) => {
+      return { ...el, date: dayjs(el.summary_date).add(1, "day").format("DD-MM-YYYY") };
+    });
+
+    res.status(200).send(parsedDate);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error);
+  }
+};
 module.exports = {
   getAllManufacturers,
   getAllSims,
+  updateAliasSim,
+  getAllSimsLegacy,
+  getSimsDetail,
 };
