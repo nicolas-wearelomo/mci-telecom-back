@@ -7,6 +7,7 @@ router.get("/manufactures", simsControllers.getAllManufacturers);
 router.get("/simsByCompany", simsControllers.getAllSims);
 router.get("/simsLegacy", simsControllers.getAllSimsLegacy);
 router.get("/detail", simsControllers.getSimsDetail);
+router.get("/consumption", simsControllers.getSimsConsumption);
 
 router.put("/updateAlias", simsControllers.updateAliasSim);
 
