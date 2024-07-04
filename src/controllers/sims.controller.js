@@ -141,6 +141,9 @@ const getSimsConsumption = async (req, res) => {
       where: {
         company: parseInt(6),
         service_provider: "Movistar",
+        created_on: {
+          lte: dayjs(to).toDate(),
+        },
       },
       select: {
         serial_number: true,
@@ -259,8 +262,49 @@ const getSimsConsumption = async (req, res) => {
         mb_disponibles: `${(el.mb_contratados - el.mb_consumidos).toFixed(2)} MB`,
       };
     });
+    let total_local = 0;
+    let total_global = 0;
+    let active_local = 0;
+    let active_global = 0;
+    let inactive_local = 0;
+    let inactive_global = 0;
+    let activation_ready_local = 0;
+    let activation_ready_global = 0;
+    let test_local = 0;
+    let test_global = 0;
+    consumption.forEach((el) => {
+      if (el.carrier.toLowerCase().includes("local")) {
+        total_local += 1;
+        if (el.status === "ACTIVE") {
+          active_local += 1;
+        } else if (el.status === "DEACTIVATED") {
+          inactive_local += 1;
+        } else if (el.status === "ACTIVATION_READY") {
+          activation_ready_local += 1;
+        } else {
+          test_local += 1;
+        }
+      } else {
+        total_global += 1;
+        if (el.status === "ACTIVE") {
+          active_global += 1;
+        } else if (el.status === "DEACTIVATED") {
+          inactive_global += 1;
+        } else if (el.status === "ACTIVATION_READY") {
+          activation_ready_global += 1;
+        } else {
+          test_global += 1;
+        }
+      }
+    });
 
-    res.status(200).send(dataToSend);
+    res.status(200).send({
+      data: dataToSend,
+      status: {
+        local: { active_local, inactive_local, activation_ready_local, test_local, total_local },
+        global: { active_global, inactive_global, activation_ready_global, test_global, total_global },
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send(error);

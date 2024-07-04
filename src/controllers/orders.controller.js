@@ -52,4 +52,16 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-module.exports = { getAllOrders };
+const getAllInfoPlan = async (req, res) => {
+  const { company } = req.query;
+
+  try {
+    const response = await prisma.carrier.findMany({});
+    res.status(200).send(response);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error);
+  }
+};
+
+module.exports = { getAllOrders, getAllInfoPlan };
