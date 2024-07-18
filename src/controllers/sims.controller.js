@@ -1,6 +1,5 @@
 const dayjs = require("dayjs");
 const prisma = require("../db");
-const { finished } = require("nodemailer/lib/xoauth2");
 
 const getAllManufacturers = async (req, res) => {
   try {
