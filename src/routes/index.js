@@ -8,6 +8,7 @@ const smsRoutes = require("./routes/sms.routes");
 const ordersRoutes = require("./routes/order.routes");
 const billingRoutes = require("./routes/billiing.routes");
 const reportsRoutes = require("./routes/report.routes");
+const recordsRoutes = require("./routes/records.routes");
 const router = Router();
 
 router.use("/login", loginRouter);
@@ -18,4 +19,5 @@ router.use("/sms", isAuthenticated, smsRoutes);
 router.use("/orders", isAuthenticated, ordersRoutes);
 router.use("/billing", isAuthenticated, billingRoutes);
 router.use("/report", isAuthenticated, reportsRoutes);
+router.use("/records", isAuthenticated, recordsRoutes);
 module.exports = router;

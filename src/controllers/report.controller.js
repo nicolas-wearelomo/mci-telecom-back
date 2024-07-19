@@ -113,7 +113,7 @@ const gerReports = async (req, res) => {
           consumption_daily_voice_val: true,
         },
       });
-      return { response, name: planName, commercial_group: planComercialGroup, status, mb_plan };
+      return { response, name: planName, commercial_group: planComercialGroup, status, mb_plan, service_provider };
     };
 
     const consumptionSims = await Promise.all(
@@ -140,6 +140,7 @@ const gerReports = async (req, res) => {
           consumption_daily_data_val: 0,
           consumption_daily_sms_val: 0,
           consumption_daily_voice_val: 0,
+          service_provider: el.service_provider,
         };
       } else {
         return el.response.reduce(
@@ -158,6 +159,7 @@ const gerReports = async (req, res) => {
             consumption_daily_data_val: 0,
             consumption_daily_sms_val: 0,
             consumption_daily_voice_val: 0,
+            service_provider: el.service_provider,
           }
         );
       }
@@ -177,6 +179,7 @@ const gerReports = async (req, res) => {
           consumption_daily_voice_val: 0,
           cantidad_sims: 0,
           cantidad_sims_activas: 0,
+          service_provider: curr.service_provider,
         };
       }
 
@@ -193,8 +196,45 @@ const gerReports = async (req, res) => {
 
     const finalResult = Object.values(groupedResults);
 
-    res.status(200).send(finalResult);
-  } catch (error) {}
+    //agrupamos por service_provicer y sumamos los valores
+
+    const groupByServiceProvider = (data) => {
+      const result = data.reduce((acc, item) => {
+        let provider = item.service_provider;
+        if (provider === "Movistar") {
+          provider += item.name.toLowerCase().includes("local") ? "_local" : "_global";
+        }
+
+        if (!acc[provider]) {
+          acc[provider] = {
+            service_provider: provider,
+            consumption_daily_data_val: 0,
+            consumption_daily_sms_val: 0,
+            consumption_daily_voice_val: 0,
+            cantidad_sims: 0,
+            cantidad_sims_activas: 0,
+          };
+        }
+
+        acc[provider].consumption_daily_data_val += item.consumption_daily_data_val;
+        acc[provider].consumption_daily_sms_val += item.consumption_daily_sms_val;
+        acc[provider].consumption_daily_voice_val += item.consumption_daily_voice_val;
+        acc[provider].cantidad_sims += item.cantidad_sims;
+        acc[provider].cantidad_sims_activas += item.cantidad_sims_activas;
+
+        return acc;
+      }, {});
+
+      return Object.values(result);
+    };
+
+    const groupedData = groupByServiceProvider(finalResult);
+
+    res.status(200).send({ data: finalResult, acumulado: groupedData });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error);
+  }
 };
 
 module.exports = { gerReports };
