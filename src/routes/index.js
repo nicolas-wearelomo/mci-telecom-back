@@ -9,6 +9,7 @@ const ordersRoutes = require("./routes/order.routes");
 const billingRoutes = require("./routes/billiing.routes");
 const reportsRoutes = require("./routes/report.routes");
 const recordsRoutes = require("./routes/records.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 const router = Router();
 
 router.use("/login", loginRouter);
@@ -20,4 +21,5 @@ router.use("/orders", isAuthenticated, ordersRoutes);
 router.use("/billing", isAuthenticated, billingRoutes);
 router.use("/report", isAuthenticated, reportsRoutes);
 router.use("/records", isAuthenticated, recordsRoutes);
+router.use("/dashboard", isAuthenticated, dashboardRoutes);
 module.exports = router;
