@@ -27,11 +27,15 @@ const isAuthenticated = async (req, res, next) => {
         },
         select: {
           name: true,
+          client_type: true,
         },
       });
 
       if (!user) return res.status(401).end();
-      const userWithOutPassword = exclude({ ...user, companyName: company.name }, "password");
+      const userWithOutPassword = exclude(
+        { ...user, companyName: company.name, client_type: company.client_type },
+        "password"
+      );
 
       req.user = userWithOutPassword;
     }

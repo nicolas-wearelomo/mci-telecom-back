@@ -13,6 +13,7 @@ const loginUser = async (req, res) => {
         email: req.body.email,
       },
     });
+
     if (!user) return res.status(404).send("Usuario o contraseña incorrecto");
     const isValid = await isValidPassword(req.body.password, user.password);
 
@@ -21,7 +22,6 @@ const loginUser = async (req, res) => {
     if (!isValid) return res.status(404).send("Usuario o contraseña incorrecto");
 
     const token = await signToken(user.id);
-
     res.status(200).send(token);
   } catch (error) {
     console.log(error);
