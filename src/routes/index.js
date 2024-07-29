@@ -10,6 +10,8 @@ const billingRoutes = require("./routes/billiing.routes");
 const reportsRoutes = require("./routes/report.routes");
 const recordsRoutes = require("./routes/records.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const overconsumptionRoutes = require("./routes/overconsumption.routes");
+const imeiRoutes = require("./routes/imei.routes");
 const router = Router();
 
 router.use("/login", loginRouter);
@@ -22,4 +24,6 @@ router.use("/billing", isAuthenticated, billingRoutes);
 router.use("/report", isAuthenticated, reportsRoutes);
 router.use("/records", isAuthenticated, recordsRoutes);
 router.use("/dashboard", isAuthenticated, dashboardRoutes);
+router.use("/overconsumption", isAuthenticated, overconsumptionRoutes);
+router.use("/imei", isAuthenticated, imeiRoutes);
 module.exports = router;
