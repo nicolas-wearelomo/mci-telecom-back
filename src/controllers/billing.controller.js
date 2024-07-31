@@ -418,8 +418,6 @@ dayjs.extend(utc);
 const getBillingByCompany = async (req, res) => {
   const { company, month, year, provider } = req.query;
 
-  console.log(company, month, year, provider);
-
   const date = dayjs(`${year}-${month}-31`).utc().endOf("day").toDate();
 
   let providerToFind = "";
@@ -471,7 +469,6 @@ const getBillingByCompany = async (req, res) => {
     }
 
     function parseBillingData(billingData) {
-      console.log(billingData);
       const keys = ["mb_plan", "mb", "sms", "voice", "value_plan", "value_over_data", "value_sms", "value_voice"];
       const parsedData = {};
 

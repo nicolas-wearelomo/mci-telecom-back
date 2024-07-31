@@ -96,6 +96,8 @@ const getOperation = async (req, res) => {
         service_provider: true,
         data_plan_id: true,
         status: true,
+        sim_global: true,
+        until_date: true,
       },
       orderBy: {
         commercial_group: "asc",

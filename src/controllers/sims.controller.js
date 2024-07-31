@@ -57,6 +57,7 @@ const getAllSims = async (req, res) => {
     });
     const data = response.map((el) => ({
       ...el,
+      expired_at: el.until_date ? el.until_date : "No especificada",
       alias_sim: el.alias_sim || "Sin Alias",
       status: el.status === "ACTIVE" ? "Activado" : el.status === "DEACTIVATED" ? "Desactivado" : "Listo para activar",
     }));
