@@ -136,6 +136,7 @@ const getInformation = async (req, res) => {
       },
       select: {
         country: true,
+        serial_number: true,
       },
       orderBy: {
         commercial_group: "asc",
@@ -401,9 +402,53 @@ const getInformation = async (req, res) => {
       ),
     ];
 
-    res.status(200).send(countries);
+    const getConsumptionSims = async (serial_number, country) => {
+      let sim = await prisma.sim_summary.findFirst({
+        where: {
+          summary_icc: serial_number,
+        },
+        orderBy: {
+          summary_date: "desc",
+        },
+        select: {
+          summary_icc: true,
+          consumption_monthly_data_val: true,
+          consumption_monthly_sms_val: true,
+          consumption_monthly_voice_val: true,
+        },
+      });
+      return {
+        ...sim,
+        country,
+      };
+    };
+
+    const consumptionResponse = await Promise.all(sims.map((el) => getConsumptionSims(el.serial_number, el.country)));
+
+    let countryArray = Object.entries(countryMap).map(([sigles, country]) => ({
+      country,
+      sigles,
+      data: 0,
+      sms: 0,
+      voice: 0,
+    }));
+
+    consumptionResponse.forEach((el) => {
+      let find = countryArray.find((country) => country.sigles === el.country);
+      if (find) {
+        find = {
+          ...find,
+          data: (find.data += el.consumption_monthly_data_val),
+          sms: (find.sms += el.consumption_monthly_sms_val),
+          voice: (find.voice += el.consumption_monthly_voice_val),
+        };
+      }
+    });
+
+    res.status(200).send({ countries, countriesData: countryArray });
   } catch (error) {
     res.status(400).send(error);
+    console.log(error);
   }
 };
 
