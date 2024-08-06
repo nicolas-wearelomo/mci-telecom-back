@@ -3,7 +3,7 @@ const prisma = require("../db");
 
 const gerReports = async (req, res) => {
   let { year, month, company } = req.query;
-  console.log(req.query);
+  // console.log(dayjs().subtract(13, "month"));
 
   let fromYear = year;
   let fromMonth = month;
@@ -230,7 +230,85 @@ const gerReports = async (req, res) => {
 
     const groupedData = groupByServiceProvider(finalResult);
 
-    res.status(200).send({ data: finalResult, acumulado: groupedData });
+    const getBillings = await prisma.billing_company_summary.findMany({
+      where: {
+        company_id: parseInt(company),
+        end_date: {
+          gte: dayjs().subtract(13, "month"),
+        },
+      },
+      select: {
+        id: true,
+        end_date: true,
+      },
+    });
+
+    const getConsumptionBillings = async (id, date) => {
+      const response = await prisma.billing_company_details.findMany({
+        where: {
+          summary_id: id,
+        },
+        select: {
+          consumption_data: true,
+          consumption_data_over: true,
+          consumption_sms: true,
+          consumption_voice: true,
+          value_data: true,
+          value_data_extra: true,
+          value_sms: true,
+          value_voice: true,
+          sims_active: true,
+        },
+      });
+      let data = {
+        consumption_data: 0,
+        consumption_sms: 0,
+        consumption_voice: 0,
+        date: dayjs(date).format("MM-YYYY"),
+      };
+
+      response.forEach((el) => {
+        (data.consumption_data += el.value_data * el.sims_active + el.consumption_data_over * el.value_data_extra),
+          (data.consumption_sms += el.consumption_sms * el.value_sms),
+          (data.consumption_voice += el.consumption_voice * el.value_voice);
+      });
+      // let data = {
+      //   consumption_data:
+      //     response.value_data * response.sims_active + response.consumption_data_over * response.value_data_extra,
+      //   consumption_sms: response.consumption_sms * response.value_sms,
+      //   consumption_voice: response.consumption_voice * response.value_voice,
+      //   date: dayjs(date).format("MM-YYYY"),
+      // };
+      return data;
+    };
+
+    // console.log(getBillings);
+    const billings = await Promise.all(getBillings.map((el) => getConsumptionBillings(el.id, el.end_date)));
+    const summedData = billings.reduce((acc, item) => {
+      // Encontrar el índice del objeto en el acumulador con la misma fecha
+      const existingIndex = acc.findIndex((accItem) => accItem.date === item.date);
+
+      if (existingIndex !== -1) {
+        // Si existe, sumar los valores
+        acc[existingIndex].consumption_data += item.consumption_data;
+        acc[existingIndex].consumption_sms += item.consumption_sms;
+        acc[existingIndex].consumption_voice += item.consumption_voice;
+      } else {
+        // Si no existe, agregar un nuevo objeto al acumulador
+        acc.push({ ...item });
+      }
+
+      return acc;
+    }, []);
+
+    summedData.sort((a, b) => {
+      const [monthA, yearA] = a.date.split("-").map(Number);
+      const [monthB, yearB] = b.date.split("-").map(Number);
+
+      return yearA !== yearB ? yearA - yearB : monthA - monthB;
+    });
+
+    res.status(200).send({ data: finalResult, acumulado: groupedData, billings: summedData });
   } catch (error) {
     console.log(error);
     res.status(400).send(error);
